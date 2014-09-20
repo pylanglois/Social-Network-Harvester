@@ -1,0 +1,227 @@
+{% extends "snh/snh_base.html" %}
+{% block extrahead %}
+<script type="text/javascript" charset="utf-8">
+	$(document).ready(function() {
+		var oTable1 = $('#comments_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_fb_postcomment_list 'web' post.fid  %}",
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    //from
+                    ($('td:eq(1)', nRow).html() == "None") ? from = aData[6] : from = aData[1];
+                    $('td:eq(1)', nRow).html(  '<a href="/fb_user_detail/{{ harvester_id }}/fid/'+aData[7]+'">'+from+'</a>' );
+                    //to (post_ffrom)
+                    //$('td:eq(2)', nRow).html(  '<a href="/fb_user_detail/{{ harvester_id }}/fid/'+aData[7]+'">'+aData[2]+'</a>' );
+                },
+		        "aoColumns": [ 
+                    { "bVisible":    true },    //0 : u'created_time/updated_time',
+                    { "bVisible":    true },    //1 : u'ffrom__username',
+                    { "bVisible":    true },    //2 : u'message',
+                    { "bVisible":    true },    //3 : u'likes',
+                    { "bVisible":    false },    //4 : u'user_likes',
+                    { "bVisible":    false },    //5 : u'ftype',
+                    { "bVisible":    false },   //6 : u'ffrom__name',
+                    { "bVisible":    false },   //7 : u'ffrom__fid',
+                    { "bVisible":    false },    //8 : u'post__fid',
+                ],
+                "aoColumnDefs": [ 
+                    { 
+                        "bSearchable": false, "aTargets": [ 0 ],
+                    }
+                ],
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_fb_postcomment_list 'csv' post.fid  %}",
+                  } ]
+                },
+            });
+
+		var oTable2 = $('#likes_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_fb_likes_list 'web' post.fid  %}",
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    //fid
+                    $('td:eq(0)', nRow).html(  '<a href="/fb_user_detail/{{ harvester_id }}/fid/'+aData[0]+'">'+aData[0]+'</a>' );
+                    //user
+                    $('td:eq(1)', nRow).html(  '<a href="/fb_user_detail/{{ harvester_id }}/fid/'+aData[0]+'">'+aData[1]+'</a>' );
+                },
+		        "aoColumns": [ 
+                    { "bVisible":    true },    //0 : u'fid',
+                    { "bVisible":    true },    //1 : u'username',
+                ],
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_fb_likes_list 'csv' post.fid  %}",
+                  } ]
+                },
+
+            });
+
+          $(window).bind('load', function () {
+            oTable1.fnAdjustColumnSizing();
+          } );
+          $(window).bind('resize', function () {
+            oTable1.fnAdjustColumnSizing();
+          } );
+	} );
+</script>
+{% endblock %}
+{% block submenu %}
+<table class="tableheader">
+    <tr>
+        <td {% if harvester_id == "0" %}class="submenu-selection"{% endif %}><a href="/fb/0">All users</a></td>
+        {% for h in all_harvesters %}
+        <td  {% ifequal harvester_id h.pmk_id|slugify %}class="submenu-selection"{% endifequal %}><a href="/fb/{{ h.pmk_id }}">{{ h }}</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}
+
+{% block content %}
+<h3>Facebook: {{ user.name }} </h3>
+<table id="user_table" class="pretty">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>name</th>
+        <th>username</th>
+        <th>category</th>
+        <th>likes</th>
+        <th>about</th>
+        <th>phone</th>
+        <th>checkins</th>
+        <th>picture</th>
+        <th>website</th>
+        <th>talking_about_count</th>
+        <th>error_triggered</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><a href="/fb_user_detail/{{ harvester_id }}/fid/{{ user.fid }}">{{ user.fid|default_if_none:"0" }}</a></td>
+        <td><a href="/fb_user_detail/{{ harvester_id }}/fid/{{ user.fid }}">{{ user.name|default_if_none:"" }}</a></td>
+        <td><a href="/fb_user_detail/{{ harvester_id }}/fid/{{ user.fid }}">{{ user.username|default_if_none:"" }}</a></td>
+        <td>{{ user.category|default_if_none:"" }}</td>
+        <td>{{ user.likes|default_if_none:"0" }}</td>
+        <td>{{ user.about|default_if_none:"" }}</td>
+        <td>{{ user.phone|default_if_none:"" }}</td>
+        <td>{{ user.checkins|default_if_none:"0" }}</td>
+        <td>{{ user.picture|default_if_none:""|urlize }}</td>
+        <td>{{ user.website|default_if_none:"0"|urlize }}</td>
+        <td>{{ user.talking_about_count|default_if_none:"0" }}</td>
+        <td>{{ user.error_triggered }}</td>
+    </tr>
+    <tr>
+        <td colspan="12"><strong>Bio:</strong> {{ user.bio|default_if_none:""}}</td>
+    </tr>
+    </tbody>
+</table>
+
+<h3>Post detail</h3>
+<table id="post_table" class="pretty">
+    <thead>
+        <tr>
+            <th>Created time</th>
+            <th>from</th>
+            <th>story / message</th>
+            <th>story_tags / message_tags</th>
+            <th>link</th>
+            <th>name</th>
+            <th>caption</th>
+            <th>description</th>
+            <th>type</th>
+            <th>likes count</th>
+            <th>liked by</th>
+            <th>shares count</th>
+            <th>comments count</th>
+            <th>created time</th>
+            <th>updated time</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ post.created_time.ctime }}</td>
+            <td><a href="/fb_user_detail/{{ harvester_id }}/fid/{{ post.ffrom.fid }}/">{{ post.ffrom.name|default_if_none:post.ffrom.username }} / ({{ post.ffrom.fid }})</a></td>
+            <td>{{ post.story|default_if_none:""|safe }}{{ post.message|default_if_none:""|safe }} </td>
+            <td>{{ post.story_tags|default_if_none:"" }}{{ post.message_tags|default_if_none:"" }} </td>
+            <td>{{ post.link|urlize }}</td>
+            <td>{{ post.name|default_if_none:"" }}</td>
+            <td>{{ post.caption|default_if_none:""|urlize }}</td>
+            <td>{{ post.description|default_if_none:""|urlize }}</td>
+            <td>{{ post.ftype|default_if_none:"" }}</td>
+            <td>{{ post.likes_count|default_if_none:"0" }}</td>
+            <td>
+            {% for u in likes_user %}
+                <a href="/facebook_detail/{{ u.fid }}/">{{ u.name }} / ({{ u.fid }}),</a>
+            {% endfor %} 
+            </td>
+            <td>{{ post.shares_count|default_if_none:"0" }}</td>
+            <td>{{ post.comments_count|default_if_none:"0" }}</td>
+            <td>{{ post.created_time.ctime }}</td>
+            <td>{{ post.updated_time.ctime }}</td>
+        </tr>
+    <tbody>
+</table>
+
+<h3>Comments</h3>
+<div  id='commentpost_chart' style='margin:0 auto; width: 1024px; height: 240px;'></div>
+<table id="comments_table" class="pretty">
+    <thead>
+        <tr>
+            <th>Created time</th>
+            <th>From</th>
+            <th>Message</th>
+            <th>Likes</th>
+            <th>User likes</th>
+            <th>type</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<h3>Likes</h3>
+<table id="likes_table" class="pretty">
+    <thead>
+        <tr>
+            <th>User ID</th>
+            <th>Name</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+    function buildChart($url_to_get, $dest_tag){
+        var jsonData = $.ajax({
+            url: $url_to_get,
+            dataType:"json",
+            async: true,
+            success: function(html){
+                    // Succesful, load visualization API and send data      
+                    var data = new google.visualization.DataTable(html);
+                    var annotatedtimeline = new google.visualization.AnnotatedTimeLine(document.getElementById($dest_tag));
+                    annotatedtimeline.draw(data, {'displayAnnotations': false});
+                }
+              });
+    }
+
+    google.load('visualization', '1', {packages: ['annotatedtimeline']});
+    buildChart("{% url snh.views.get_commentpost_chart harvester_id post.fid %}", 'commentpost_chart')
+</script>
+
+{% endblock %}

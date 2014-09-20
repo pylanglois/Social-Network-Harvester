@@ -1,0 +1,58 @@
+{% extends "snh/snh_base.html" %}
+{% block extrahead %}
+<script type="text/javascript" charset="utf-8">
+	$(document).ready(function() {
+		$('#user_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_fb_list 'web' harvester_id %}",
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    $('td:eq(1)', nRow).html( '<a href="/fb_user_detail/'+{{harvester_id}}+'/fid/'+aData[0]+'">'+aData[1]+'</a>' );
+                },
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_fb_list 'csv' harvester_id %}",
+                  } ]
+                },
+            });
+	} );
+</script>
+{% endblock %}
+{% block submenu %}
+<table class="tableheader">
+    <tr>
+        <td {% if harvester_id == "0" %}class="submenu-selection"{% endif %}><a href="/fb/0">All users</a></td>
+        {% for h in all_harvesters %}
+        <td  {% ifequal harvester_id h.pmk_id|slugify %}class="submenu-selection"{% endifequal %}><a href="/fb/{{ h.pmk_id }}">{{ h }}</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}
+
+{% block content %}
+<h3>List of users</h3>
+<table id="user_table" class="pretty" width="100%">
+    <thead>
+    <tr>
+        <th>snh_id</th>
+        <th>ID</th>
+        <th>name</th>
+        <th>username</th>
+        <th>category</th>
+        <th>likes</th>
+        <th>about</th>
+        <th>phone</th>
+        <th>checkins</th>
+        <th>talking_about_count</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+{% endblock %}

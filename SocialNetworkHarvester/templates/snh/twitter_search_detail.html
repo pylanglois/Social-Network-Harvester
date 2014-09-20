@@ -1,0 +1,61 @@
+{% extends "snh/snh_base.html" %}
+{% block extrahead %}
+<script type="text/javascript" charset="utf-8">
+	$(document).ready(function() {
+		var oTable2 = $('#search_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_tw_searchdetail_list 'web' search.pmk_id  %}",
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    $('td:eq(1)', nRow).html( '<a href="/tw_status_detail/{{ harvester_id }}/'+aData[1]+'">'+aData[1]+'</a>' );
+                    $('td:eq(2)', nRow).html( '<a href="/tw_user_detail/{{ harvester_id }}/'+aData[2]+'">'+aData[2]+'</a>' );
+                },
+                "aoColumnDefs": [ 
+                    { 
+                        "bSearchable": false, "aTargets": [ 0 ] 
+                    }
+                ],
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_tw_searchdetail_list 'csv' search.pmk_id  %}",
+                  } ]
+                },
+            });
+
+	} );
+</script>
+{% endblock %}
+{% block submenu %}
+<table class="tableheader">
+    <tr>
+        <td {% if harvester_id == "0" %}class="submenu-selection"{% endif %}><a href="/tw/0">All users</a></td>
+        {% for h in all_harvesters %}
+        <td  {% ifequal harvester_id h.pmk_id|slugify %}class="submenu-selection"{% endifequal %}><a href="/tw/{{ h.pmk_id }}">{{ h }}</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}
+
+{% block content %}
+<h3>Search results for {{ search.term }} </h3>
+<table id="search_table" class="pretty">
+    <thead>
+        <tr>
+            <th>Created at</th>
+            <th>ID</th>
+            <th>From</th>
+            <th>text</th>
+            <th>source</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+{% endblock %}

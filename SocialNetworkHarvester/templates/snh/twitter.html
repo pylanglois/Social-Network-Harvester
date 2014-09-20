@@ -1,0 +1,103 @@
+{% extends "snh/snh_base.html" %}
+{% block extrahead %}
+<script type="text/javascript" charset="utf-8">
+	$(document).ready(function() {
+		$('#user_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_tw_list 'web' harvester_id %}",
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    $('td:eq(0)', nRow).html( '<a href="/tw_user_detail/'+{{harvester_id}}+'/'+aData[1]+'">'+aData[0]+'</a>' );
+                    $('td:eq(1)', nRow).html( '<a href="/tw_user_detail/'+{{harvester_id}}+'/'+aData[1]+'">'+aData[1]+'</a>' );
+                },
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_tw_list 'csv' harvester_id %}",
+                  } ]
+                },
+            });
+		$('#search_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_twsearch_list 'web' harvester_id %}",
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    $('td:eq(0)', nRow).html( '<a href="/tw_search_detail/'+{{harvester_id}}+'/'+aData[0]+'">'+aData[1]+'</a>' );
+                },
+		        "aoColumns": [ 
+			        /* Version */  { "bVisible":    false },
+			        /* Version */  { "bVisible":    true },
+		        ],
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_twsearch_list 'csv' harvester_id %}",
+                  } ]
+                },
+            });
+	} );
+</script>
+{% endblock %}
+{% block submenu %}
+<table class="tableheader">
+    <tr>
+        <td {% if harvester_id == "0" %}class="submenu-selection"{% endif %}><a href="/tw/0">All users</a></td>
+        {% for h in all_harvesters %}
+        <td  {% ifequal harvester_id h.pmk_id|slugify %}class="submenu-selection"{% endifequal %}><a href="/tw/{{ h.pmk_id }}">{{ h }}</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}
+
+{% block content %}
+<h3>List of users</h3>
+<table id="user_table" class="pretty" width="100%">
+    <thead>
+    <tr>
+        <th>snh_id</th>
+        <th>Name</th>
+        <th>Screen Name</th>
+        <th>Description</th>
+        <th>Followers count</th>
+        <th>Friends count</th>
+        <th>Statuses count</th>
+        <th>Listed count</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for twuser in user_list %}
+    <tr onclick="document.location.href='/'">
+        <td>{{ twuser.name }}</td>
+        <td>{{ twuser.screen_name }}</td>
+        <td>{{ twuser.description }}</td>
+        <td class="center">{{ twuser.followers_count|default_if_none:"0" }}</td>
+        <td class="center">{{ twuser.friends_count|default_if_none:"0" }}</td>
+        <td class="center">{{ twuser.statuses_count|default_if_none:"0" }}</td>
+        <td class="center">{{ twuser.listed_count|default_if_none:"0" }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<h3>List of search tag</h3>
+<table id="search_table" class="pretty" width="100%">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Term</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+{% endblock %}

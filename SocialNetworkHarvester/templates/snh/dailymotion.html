@@ -1,0 +1,69 @@
+{% extends "snh/snh_base.html" %}
+{% block extrahead %}
+<script type="text/javascript" charset="utf-8">
+	$(document).ready(function() {
+
+		$('#user_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_dm_list 'web' harvester_id %}",
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    $('td:eq(0)', nRow).html( '<a href="/dm_user_detail/'+{{harvester_id}}+'/fid/'+aData[0]+'">'+aData[0]+'</a>' );
+                    $('td:eq(1)', nRow).html( '<a href="/dm_user_detail/'+{{harvester_id}}+'/fid/'+aData[0]+'">'+aData[1]+'</a>' );
+                    $('td:eq(2)', nRow).html( '<a href="/dm_user_detail/'+{{harvester_id}}+'/fid/'+aData[0]+'">'+aData[2]+'</a>' );
+
+                    //description
+                    $('td:eq(4)', nRow).html( _wordwrap(aData[4],50) );
+                    //url
+                    $('td:eq(8)', nRow).html( '<a href="'+aData[8]+'">'+_wordwrap(aData[8],30)+'</a>' );
+
+                },
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_dm_list 'csv' harvester_id %}",
+                  } ]
+                },
+
+            });
+	} );
+</script>
+{% endblock %}
+{% block submenu %}
+<table class="tableheader">
+    <tr>
+        <td {% if harvester_id == "0" %}class="submenu-selection"{% endif %}><a href="/dm/0">All users</a></td>
+        {% for h in all_harvesters %}
+        <td  {% ifequal harvester_id h.pmk_id|slugify %}class="submenu-selection"{% endifequal %}><a href="/dm/{{ h.pmk_id }}">{{ h }}</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}
+
+{% block content %}
+<h3>List of users</h3>
+<table id="user_table" class="pretty" width="100%">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>username</th>
+        <th>screenname</th>
+        <th>gender</th>
+        <th>description</th>
+        <th>language</th>
+        <th>status</th>
+        <th>type</th>
+        <th>url</th>
+        <th>views total</th>
+        <th>videos total</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+{% endblock %}

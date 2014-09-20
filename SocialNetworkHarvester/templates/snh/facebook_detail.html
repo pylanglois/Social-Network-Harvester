@@ -1,0 +1,279 @@
+{% extends "snh/snh_base.html" %}
+{% block extrahead %}
+<script type="text/javascript" charset="utf-8">
+    var postfunc = function( nRow, aData, iDisplayIndex ) {
+        
+        //fb_post_detail
+        $('td:eq(1)', nRow).html( '<a href="/fb_post_detail/{{ harvester_id }}/'+aData[1]+'">'+_wordwrap(aData[1])+'</a>' );
+
+        //from
+        ($('td:eq(2)', nRow).html() == "None") ? from = aData[15] : from = aData[2];
+        $('td:eq(2)', nRow).html(  '<a href="/fb_user_detail/{{ harvester_id }}/fid/'+aData[16]+'">'+_wordwrap(from)+'</a>' );
+
+        //name
+        $('td:eq(3)', nRow).html( _wordwrap(aData[3]) );
+
+        //description
+        $('td:eq(4)', nRow).html( _wordwrap(aData[4],120) );
+
+        //message
+        ($('td:eq(6)', nRow).html() == "None") ? msg = aData[14] : msg = aData[6];
+        $('td:eq(6)', nRow).html( _wordwrap(msg) );
+
+        //longlink
+        ($('td:eq(7)', nRow).html() == "None") ? link = "" : link = '<a href="'+aData[7]+'">'+ _wordwrap(aData[7]) +'</a>';
+        $('td:eq(7)', nRow).html( link );
+        
+        //longlink
+        ($('td:eq(12)', nRow).html() == "None") ? app = "" : app = aData[12]
+        $('td:eq(12)', nRow).html( app );
+    }
+
+    var aoColumnDefs_cust= [ 
+        { 
+            "bSearchable": false, "aTargets": [ 0, 13 ],
+        }
+    ];
+    var aoColumns = [ 
+        { "bVisible":    true },    //0 : u'created_time/updated_time',
+        { "bVisible":    true },    //1 : u'fid',
+        { "bVisible":    true },    //2 : u'ffrom__username',
+        { "bVisible":    true },    //3 : u'name',
+        { "bVisible":    true },    //4 : u'description',
+        { "bVisible":    true },    //5 : u'caption',
+        { "bVisible":    true },    //6 : u'message/story',
+        { "bVisible":    true },    //7 : u'link__original_url',
+        { "bVisible":    true },    //8 : u'ftype',
+        { "bVisible":    true },    //9 : u'likes_count',
+        { "bVisible":    true },    //10: u'shares_count',
+        { "bVisible":    true },    //11: u'comments_count',
+        { "bVisible":    true },    //12: u'application_raw',
+        { "bVisible":    false },    //13: u'updated_time',
+        { "bVisible":    false },    //14: u'story',
+        { "bVisible":    false },    //15: u'ffrom__name',
+        { "bVisible":    false },    //16: u'ffrom__fid',
+    ];
+
+	$(document).ready(function() {
+		var oTable1 = $('#post_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_fb_post_list 'web' user.fid %}",
+                "fnRowCallback": postfunc,
+                "aoColumnDefs": aoColumnDefs_cust,
+		        "aoColumns": aoColumns,
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_fb_post_list 'csv' user.fid %}",
+                  } ]
+                },
+            });
+		var oTable2 = $('#other_post_table').dataTable(
+            {
+
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_fb_otherpost_list 'web' user.fid  %}",
+                "aoColumnDefs": aoColumnDefs_cust,
+		        "aoColumns": aoColumns,
+                "fnRowCallback": postfunc,
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_fb_otherpost_list 'csv' user.fid  %}",
+                  } ]
+                },
+            });
+
+		var oTable3 = $('#comments_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_fb_comment_list 'web' user.fid  %}",
+                "aoColumnDefs": aoColumnDefs,
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    //from
+                    ($('td:eq(1)', nRow).html() == "None") ? from = aData[8] : from = aData[1];
+                    $('td:eq(1)', nRow).html(  '<a href="/fb_user_detail/{{ harvester_id }}/fid/'+aData[9]+'">'+from+'</a>' );
+                    //to (post_ffrom)
+                    $('td:eq(2)', nRow).html(  '<a href="/fb_user_detail/{{ harvester_id }}/fid/'+aData[10]+'">'+aData[2]+'</a>' );
+                    //post
+                    $('td:eq(3)', nRow).html(  '<a href="/fb_post_detail/{{ harvester_id }}/'+aData[3]+'">'+aData[3]+'</a>' );
+                },
+		        "aoColumns": [ 
+                    { "bVisible":    true },    //0 : u'created_time/updated_time',
+                    { "bVisible":    true },    //1 : u'ffrom__username',
+                    { "bVisible":    true },    //2 : u'post__ffrom__name',
+                    { "bVisible":    true },    //3 : u'post__fid',
+                    { "bVisible":    true },    //4 : u'message',
+                    { "bVisible":    true },    //5 : u'likes',
+                    { "bVisible":    false },    //6 : u'user_likes',
+                    { "bVisible":    false },    //7 : u'ftype',
+                    { "bVisible":    false },    //8 : u'ffrom__name',
+                    { "bVisible":    false },    //9 : u'ffrom__fid',
+                    { "bVisible":    false },    //10: u'post__ffrom__fid',
+                ],
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_fb_comment_list 'csv' user.fid  %}",
+                  } ]
+                },
+
+            });
+	} );
+</script>
+{% endblock %}
+{% block submenu %}
+<table class="tableheader">
+    <tr>
+        <td {% if harvester_id == "0" %}class="submenu-selection"{% endif %}><a href="/fb/0">All users</a></td>
+        {% for h in all_harvesters %}
+        <td  {% ifequal harvester_id h.pmk_id|slugify %}class="submenu-selection"{% endifequal %}><a href="/fb/{{ h.pmk_id }}">{{ h }}</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}
+
+{% block content %}
+<h3>{{ user.name }} </h3>
+<table id="user_table" class="pretty">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>name</th>
+        <th>username</th>
+        <th>category</th>
+        <th>likes</th>
+        <th>about</th>
+        <th>phone</th>
+        <th>checkins</th>
+        <th>picture</th>
+        <th>website</th>
+        <th>talking_about_count</th>
+        <th>error_triggered</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><a href="/fb_user_detail/{{ harvester_id }}/fid/{{user.fid}}">{{ user.fid|default_if_none:"0" }}</a></td>
+        <td><a href="/fb_user_detail/{{ harvester_id }}/fid/{{user.fid}}">{{ user.name|default_if_none:"" }}</a></td>
+        <td><a href="/fb_user_detail/{{ harvester_id }}/fid/{{user.fid}}">{{ user.username|default_if_none:"" }}</a></td>
+        <td>{{ user.category|default_if_none:"" }}</td>
+        <td>{{ user.likes|default_if_none:"0" }}</td>
+        <td>{{ user.about|default_if_none:"" }}</td>
+        <td>{{ user.phone|default_if_none:"" }}</td>
+        <td>{{ user.checkins|default_if_none:"0" }}</td>
+        <td>{{ user.picture|default_if_none:""|urlize }}</td>
+        <td>{{ user.website|default_if_none:"0"|urlize }}</td>
+        <td>{{ user.talking_about_count|default_if_none:"0" }}</td>
+        <td>{{ user.error_triggered }}</td>
+    </tr>
+    <tr>
+        <td colspan="12"><strong>Bio:</strong> {{ user.bio|default_if_none:""}}</td>
+    </tr>
+    </tbody>
+</table>
+<h3>{{ user.name }}'s wall</h3>
+<div  id='wall_chart' style='margin:0 auto; width: 1024px; height: 240px;'></div>
+<table id="post_table" class="pretty">
+    <thead>
+        <tr>
+            <th>Created / Updated time</th>
+            <th>Post ID</th>
+            <th>From</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Caption</th>
+            <th>Message / Story</th>
+            <th>Link</th>
+            <th>Type</th>
+            <th>Likes count</th>
+            <th>Shares count</th>
+            <th>Comments count</th>
+            <th>App</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<h3>{{ user.name }} posts on other's wall</h3>
+<div  id='otherwall_chart' style='margin:0 auto; width: 1024px; height: 240px;'></div>
+<table id="other_post_table" class="pretty">
+    <thead>
+        <tr>
+        <tr>
+            <th>Created / Updated time</th>
+            <th>Post ID</th>
+            <th>To</th>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Caption</th>
+            <th>Message / Story</th>
+            <th>Link</th>
+            <th>Type</th>
+            <th>Likes count</th>
+            <th>Shares count</th>
+            <th>Comments count</th>
+            <th>App</th>
+        </tr>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+
+<h3>{{ user.name }} comments</h3>
+<div  id='comment_chart' style='margin:0 auto; width: 1024px; height: 240px;'></div>
+<table id="comments_table" class="pretty">
+    <thead>
+        <tr>
+            <th>Created time</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Post ID</th>
+            <th>Message</th>
+            <th>Likes</th>
+            <th>User likes</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+    function buildChart($url_to_get, $dest_tag){
+        var jsonData = $.ajax({
+            url: $url_to_get,
+            dataType:"json",
+            async: true,
+            success: function(html){
+                    // Succesful, load visualization API and send data      
+                    var data = new google.visualization.DataTable(html);
+                    var annotatedtimeline = new google.visualization.AnnotatedTimeLine(document.getElementById($dest_tag));
+                    annotatedtimeline.draw(data, {'displayAnnotations': false});
+                }
+              });
+    }
+
+    google.load('visualization', '1', {packages: ['annotatedtimeline']});
+    
+    buildChart("{% url snh.views.get_wall_chart harvester_id user.fid %}", 'wall_chart')
+    buildChart("{% url snh.views.get_otherwall_chart harvester_id user.fid %}", 'otherwall_chart')
+    buildChart("{% url snh.views.get_comment_chart harvester_id user.fid %}", 'comment_chart')
+</script>
+{% endblock %}

@@ -1,0 +1,101 @@
+{% extends "snh/snh_base.html" %}
+{% block extrahead %}
+{% endblock %}
+{% block submenu %}
+<table class="tableheader">
+    <tr>
+        <td {% if harvester_id == "0" %}class="submenu-selection"{% endif %}><a href="/tw/0">All users</a></td>
+        {% for h in all_harvesters %}
+        <td  {% ifequal harvester_id h.pmk_id|slugify %}class="submenu-selection"{% endifequal %}><a href="/tw/{{ h.pmk_id }}">{{ h }}</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}
+
+{% block content %}
+<h3>{{ twuser.name|default_if_none:twuser.screen_name }} </h3>
+
+<table id="user_table" class="pretty">
+    <thead>
+    <tr class="head">
+    <th>Name</th>
+    <th>Screen Name</th>
+    <th>Description</th>
+    <th>Followers count</th>
+    <th>Friends count</th>
+    <th>Statuses count</th>
+    <th>Listed count</th>
+    <th>URL</th>
+    <th>Location</th>
+    <th>Time zone</th>
+    <th>UTC offset</th>
+    <th>Protected</th>
+    <th>Language</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+    <td>{{ twuser.name }}</td>
+    <td><a href="/tw_user_detail/{{ harvester_id }}/{{ twuser.screen_name }}/">{{ twuser.screen_name }}</a></td>
+    <td>{{ twuser.description }}</td>
+    <td>{{ twuser.followers_count }}</td>
+    <td>{{ twuser.friends_count }}</td>
+    <td>{{ twuser.statuses_count }}</td>
+    <td>{{ twuser.listed_count }}</td>
+    <td></td>
+    <td>{{ twuser.location }}</td>
+    <td>{{ twuser.time_zone }}</td>
+    <td>{{ twuser.utc_offset }}</td>
+    <td>{{ twuser.protected }}</td>
+    <td>{{ twuser.lang }}</td>
+    </tr>
+    </tbody>
+
+
+</table>
+<h3>Status detail</h3>
+<table id="post_table" class="pretty" width="100%" border="0" cellspacing="2" cellpadding="0">
+    <thead>
+    <tr class="head">
+        <th>Created at</th>
+        <th>ID</th>
+        <th>Text</th>
+        <th>Retweet count</th>
+        <th>Retweeted</th>
+        <th>source</th>
+        <th>Truncated</th>
+        <th>Favorited</th>
+        <th>Mentions</th>
+        <th>Hash tag</th>
+        <th>URLS</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td id="date">{{ status.created_at.ctime }}</td>
+        <td><a href="/tw_status_detail/{{ harvester_id }}/{{ status.fid }}/">{{ status.fid }}</a></td>
+        <td>{{ status.text|urlize }}</td>
+        <td>{{ status.retweet_count }}</td>
+        <td>{{ status.retweeted }}</td>
+        <td>{{ status.source|safe }}</td>
+        <td>{{ status.truncated }}</td>
+        <td>{{ status.favorited }}</td>
+        <td>
+        {%  for mention in mentions %}
+            @{{ mention }} &nbsp;
+        {% endfor %}
+        </td>
+        <td>
+        {%  for tag in tags %}
+            #{{ tag }} &nbsp;
+        {% endfor %}
+        </td>
+        <td>
+        {%  for url in urls %}
+            {{ url|urlize }} &nbsp;
+        {% endfor %}
+        </td>
+    </tr>
+    <tbody>
+</table>
+{% endblock %}

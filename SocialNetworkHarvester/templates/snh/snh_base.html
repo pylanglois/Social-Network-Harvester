@@ -1,0 +1,67 @@
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ LANGUAGE_CODE|default:"en-us" }}" xml:lang="{{ LANGUAGE_CODE|default:"en-us" }}">
+<head>
+<title>{% block title %}{% endblock %}</title>
+{% block extrastyle %}{% endblock %}
+<style type="text/css" title="currentStyle">
+	@import "/static/complete.css"; 
+	@import "/static/snh_base.css"; 
+	@import "/static/css/TableTools.css"; 
+</style>
+<script type="text/javascript" language="javascript" src="/static/jquery.js"></script>
+<script type="text/javascript" language="javascript" src="/static/jquery.dataTables.js"></script>
+<script type="text/javascript" charset="utf-8" src="/static/js/TableTools.js"></script>
+<script type="text/javascript" charset="utf-8" src="/static/js/ZeroClipboard.js"></script>
+<script type="text/javascript" charset="utf-8" src="/static/snh.js"></script>
+{% block extrahead %}{% endblock %}
+{% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
+</head>
+<body>
+
+<!-- Container -->
+<div id="container">
+    <!-- Header -->
+    <div id="header">
+        <div id="branding">
+            <h1>Social Network Harvester - Interface de consultation</h1>
+        </div>
+        <table class="tableheader" id="user-tools" cellpadding="5">
+            <tr>
+                <td {% if home_selected %}class="menu-selection"{% endif %}><a href="/">Accueil</a></td>
+                <td {% if tw_selected %}class="menu-selection"{% endif %}><a href="/tw/0">Twitter</a></td>
+                <td {% if fb_selected %}class="menu-selection"{% endif %}><a href="/fb/0">Facebook</a></td>
+                <td {% if dm_selected %}class="menu-selection"{% endif %}><a href="/dm/0">Dailymotion</a></td>
+                <td {% if yt_selected %}class="menu-selection"{% endif %}><a href="/yt/0">Youtube</a></td>
+                <td><a href="/admin">Administration</a></td>
+                <td><a href="/logout">Logout</a></td>
+            </tr>
+            <tr>
+                <td class="menu-selection" colspan=7>
+                    {% block submenu %}&nbsp;{% endblock %}
+                </td>
+            </tr>
+        </table>
+    </div>
+    <!-- END Header -->
+
+    <!-- Content -->
+    <div id="content" class="{% block coltype %}colM{% endblock %}">
+        {% block pretitle %}{% endblock %}
+        {% block content_title %}{% if title %}<h1>{{ title }}</h1>{% endif %}{% endblock %}
+        {% block content %}
+        {% block object-tools %}{% endblock %}
+        {{ content }}
+        {% endblock %}
+        {% block sidebar %}{% endblock %}
+        <br class="clear" />
+    </div>
+    <!-- END Content -->
+
+    {% block footer %}
+    <div id="footer">
+    <p><a href="https://github.com/pylanglois/Social-Network-Harvester">Social Network Harverster v 0.1</a></p>
+    </div>{% endblock %}
+</div>
+<!-- END Container -->
+
+</body>
+</html>

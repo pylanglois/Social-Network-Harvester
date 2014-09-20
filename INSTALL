@@ -1,0 +1,97 @@
+#from ubuntu 11.10 server base installation
+
+sudo apt-get update
+sudo apt-get dist-upgrade
+sudo apt-get install gnome-core
+
+sudo apt-get install resolvconf
+#add your name server manually in /etc/network/interface under the interface that will route the request...
+#see http://wiki.debian.org/NetworkConfiguration#The_resolvconf_program
+
+sudo apt-get install mysql-server apache2 libapache2-mod-wsgi python-django python-mysqldb 
+
+sudo apt-get install python-qt4 libqt4-webkit
+
+sudo apt-get install python-oauth2 python-pip
+
+sudo pip install fandjango #fandjango-4.0.3
+
+sudo pip install python-twitter #python_twitter-0.8.2
+
+#Installation
+
+#copy the source from github where you want.
+unzip file.zip /home/snh/prod/SocialNetworkHarvester
+cd /home/snh/prod/SocialNetworkHarvester
+sudo nano settings
+#edit your mysql access. You will need to create a schema and a user before doing this. test your access with "mysql -u yourmysqluser -p"
+#add your application_key, secret, etc....
+
+#synchroniser les BD
+./manage.py syncdb
+
+#création des certificats
+#http://www.trustonme.net/didactels/315.html
+
+mkdir /tmp/ssl_conf
+cd /tmp/ssl_conf
+
+openssl req -config /etc/ssl/openssl.cnf -new -out trustonme.csr
+openssl rsa -in privkey.pem -out trustonme.key
+openssl x509 -in trustonme.csr -out trustonme.crt -req -signkey trustonme.key -days 3650
+openssl x509 -in trustonme.crt -out trustonme.der.crt -outform DER
+
+sudo mkdir -p /etc/apache2/ssl/key/
+sudo mkdir -p /etc/apache2/ssl/crt/
+
+sudo cp trustonme.crt /etc/apache2/ssl/crt/
+sudo cp trustonme.key /etc/apache2/ssl/key/
+
+sudo a2enmod ssl
+
+sudo nano /etc/apache2/sites-available/snh
+#add the following content and adapt to you
+<VirtualHost *:80>
+    ServerAdmin x@x.com
+    ServerName testlocal.local
+    DocumentRoot /home/snh/prod/SocialNetworkHarvester/public
+
+    # Django settings
+    WSGIScriptAlias /  /home/snh/prod/SocialNetworkHarvester/wsgi_handler.py
+    WSGIDaemonProcess testlocal.local user=yourunixuser group=yourunixgroup processes=1 threads=10
+    WSGIProcessGroup testlocal.local
+
+    # Non-Django directories
+    Alias /static  /home/snh/prod/SocialNetworkHarvester/public/static/
+    <Location "/static">
+        SetHandler None
+    </Location>
+
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerAdmin x@x.com
+    ServerName testlocal.local
+    DocumentRoot /home/snh/prod/SocialNetworkHarvester/public
+
+    # WSGI Settings
+    WSGIScriptAlias /  /home/snh/prod/SocialNetworkHarvester/wsgi_handler.py
+    WSGIProcessGroup testlocal.local
+
+    # Non-Django directories
+    Alias /static  /home/snh/prod/SocialNetworkHarvester/public/static/
+    <Location "/static">
+        SetHandler None
+    </Location>
+
+    # SSL Stuff
+    SSLEngine On
+    SSLCertificateFile /etc/apache2/ssl/crt/trustonme.crt
+    SSLCertificateKeyFile /etc/apache2/ssl/key/trustonme.key
+    <Location />
+            SSLRequireSSL On
+            SSLVerifyClient optional
+            SSLVerifyDepth 1
+            SSLOptions +StdEnvVars +StrictRequire
+    </Location>
+</VirtualHost>

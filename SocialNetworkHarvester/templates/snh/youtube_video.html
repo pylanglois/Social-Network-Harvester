@@ -1,0 +1,173 @@
+{% extends "snh/snh_base.html" %}
+{% block extrahead %}
+<script type="text/javascript" src="/static/flowplayer-3.2.9.min.js"></script>
+<script type="text/javascript" charset="utf-8">
+	$(document).ready(function() {
+
+		var oTable3 = $('#comments_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_yt_videocomment_list 'web' video.fid  %}",
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    //from
+                    ($('td:eq(1)', nRow).html() == "None") ? from = aData[5] : from = aData[1];
+                    $('td:eq(1)', nRow).html(  '<a href="/yt_user_detail/{{ harvester_id }}/fid/'+aData[5]+'">'+from+'</a>' );
+                    //to (post_ffrom)
+                    $('td:eq(2)', nRow).html(  '<a href="/yt_user_detail/{{ harvester_id }}/fid/'+aData[6]+'">'+aData[2]+'</a>' );
+                    //post
+                    $('td:eq(3)', nRow).html(  '<a href="/yt_video_detail/{{ harvester_id }}/'+aData[3]+'">'+aData[3]+'</a>' );
+                },
+		        "aoColumns": [ 
+                    { "bVisible":    true },//0 : u'published',
+                    { "bVisible":    true },//1 : u'user__username',
+                    { "bVisible":    true },//2 : u'video__user__username',
+                    { "bVisible":    true },//3 : u'video__fid',
+                    { "bVisible":    true },//4 : u'message',
+                    { "bVisible":    false },//5 : u'user__fid',
+                    { "bVisible":    false },//6 : u'video__user__fid',
+                ],
+                "aoColumnDefs": [ 
+                    { 
+                        "bSearchable": false, "aTargets": [ 0 ],
+                    }
+                ],
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_yt_videocomment_list 'csv' video.fid  %}",
+                  } ]
+                },
+            });
+    });
+</script>
+{% endblock %}
+{% block submenu %}
+<table class="tableheader">
+    <tr>
+        <td {% if harvester_id == "0" %}class="submenu-selection"{% endif %}><a href="/yt/0">All users</a></td>
+        {% for h in all_harvesters %}
+        <td  {% ifequal harvester_id h.pmk_id|slugify %}class="submenu-selection"{% endifequal %}><a href="/yt/{{ h.pmk_id }}">{{ h }}</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}
+
+{% block content %}
+<h3>{{ user.first_name|default_if_none:"" }}&nbsp;{{ user.last_name|default_if_none:"" }}</h3>
+<table id="user_table" class="pretty" width="100%">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>username</th>
+        <th>name</th>
+        <th>relationship</th>
+        <th>description</th>
+        <th>age</th>
+        <th>gender</th>
+        <th>location</th>
+        <th>company</th>
+        <th>last web access</th>
+        <th>subscriber count</th>
+        <th>video watch count</th>
+        <th>view count</th>
+
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td><a href="/yt_user_detail/{{ harvester_id }}/fid/{{user.fid}}">{{ user.fid|default_if_none:"0" }}</a></td>
+        <td><a href="/yt_user_detail/{{ harvester_id }}/fid/{{user.fid}}">{{ user.username|default_if_none:"" }}</a></td>
+        <td><a href="/yt_user_detail/{{ harvester_id }}/fid/{{user.fid}}">{{ user.first_name|default_if_none:"" }}&nbsp;{{ user.last_name|default_if_none:"" }}</a></td>
+        <td>{{ user.relationship|default_if_none:"" }}</td>
+        <td>{{ user.description|default_if_none:"0" }}</td>
+        <td>{{ user.age|default_if_none:"" }}</td>
+        <td>{{ user.gender|default_if_none:"" }}</td>
+        <td>{{ user.location|default_if_none:"0" }}</td>
+        <td>{{ user.company|default_if_none:"0" }}</td>
+        <td>{{ user.last_web_access|default_if_none:"0" }}</td>
+        <td>{{ user.subscribers_count|default_if_none:"0" }}</td>
+        <td>{{ user.video_watch_count|default_if_none:"0" }}</td>
+        <td>{{ user.view_count|default_if_none:"0" }}</td>
+    </tr>
+    </tbody>
+</table>
+
+<h3>{{ video.title }} </h3>
+<table id="video_table" class="pretty">
+    <thead>
+        <tr>
+            <th>Published</th>
+            <th>Video ID</th>
+            <th>title</th>
+            <th>description</th>
+            <th>category</th>
+            <th>duration</th>
+            <th>view count</th>
+            <th>favorite count</th>
+        </tr>
+    </thead>
+    <tbody>
+        <td>{{ video.published }}</td>
+        <td>{{ video.fid }}</td>
+        <td>{{ video.title }}</td>
+        <td>{{ video.description }}</td>
+        <td>{{ video.category }}</td>
+        <td>{{ video.duration }}</td>
+        <td>{{ video.view_count }}</td>
+        <td>{{ video.favorite_count }}</td>
+    </tbody>
+</table>
+<br>
+<center>
+<a  
+	 href="{{ video_url }}"
+	 style="display:block;width:520px;height:330px"  
+	 id="player"> 
+</a> 
+<a href="{{ video_url }}">Download</a> 
+<!-- this will install flowplayer inside previous A- tag. -->
+<script>
+	flowplayer("player", "/static/flowplayer-3.2.10.swf");
+</script>
+</center>
+<h3>Comments</h3>
+<div  id='ytvideocomment_chart' style='margin:0 auto; width: 1024px; height: 240px;'></div>
+<table id="comments_table" class="pretty">
+    <thead>
+        <tr>
+            <th>Published</th>
+            <th>From</th>
+            <th>To</th>
+            <th>Video ID</th>
+            <th>Message</th>
+        </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript">
+    function buildChart($url_to_get, $dest_tag){
+
+        var jsonData = $.ajax({
+            url: $url_to_get,
+            dataType:"json",
+            async: true,
+            success: function(html){
+                    // Succesful, load visualization API and send data      
+                    var data = new google.visualization.DataTable(html);
+                    var annotatedtimeline = new google.visualization.AnnotatedTimeLine(document.getElementById($dest_tag));
+                    annotatedtimeline.draw(data, {'displayAnnotations': false});
+                }
+              });
+    }
+
+    google.load('visualization', '1', {packages: ['annotatedtimeline']});
+    buildChart("{% url snh.views.get_ytvideocomment_chart harvester_id video.fid %}", 'ytvideocomment_chart')
+</script>
+{% endblock %}

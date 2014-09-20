@@ -1,0 +1,20 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans 'Django site admin' %}{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">{% trans "Interface d'administration - Social Network Harvester" %}</h1>
+{% endblock %}
+
+{% block nav-global %}
+<table>
+    <tr>
+        <td><a href="/">Accès à la consultation</a></td>
+        <td><a href="/test_fb_token">Test Facebook token</a></td>
+        <td><a href="/request_fb_token">Get Facebook token</a></td>
+    </tr>
+</table>
+{% endblock %}
+
+

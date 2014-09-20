@@ -1,0 +1,90 @@
+{% extends "snh/snh_base.html" %}
+{% block extrahead %}
+<script type="text/javascript" charset="utf-8">
+	$(document).ready(function() {
+
+        var aoColumnDefs = [ 
+            { 
+                "bSearchable": false, "aTargets": [ 10 ],
+            }
+        ];
+		$('#user_table').dataTable(
+            {
+                "iDisplayLength": iDisplayLength, 
+                "sPaginationType": sPaginationType,
+                "sDom": sDom,
+                "aaSorting": aaSorting,
+                "bAutoWidth": bAutoWidth,
+                "aoColumnDefs":aoColumnDefs,
+		        "bServerSide": bServerSide, 
+		        "sAjaxSource": "{% url snh.views.get_yt_list 'web' harvester_id %}",
+                "fnRowCallback": function( nRow, aData, iDisplayIndex ) {
+                    $('td:eq(0)', nRow).html( '<a href="/yt_user_detail/'+{{harvester_id}}+'/fid/'+aData[0]+'">'+aData[0]+'</a>' );
+                    $('td:eq(1)', nRow).html( '<a href="/yt_user_detail/'+{{harvester_id}}+'/fid/'+aData[0]+'">'+aData[1]+'</a>' );
+                    $('td:eq(2)', nRow).html( '<a href="/yt_user_detail/'+{{harvester_id}}+'/fid/'+aData[0]+'">'+aData[2]+'</a>' );
+
+                    //description
+                    $('td:eq(4)', nRow).html( _wordwrap(aData[4],50) );
+                    //url
+                    $('td:eq(8)', nRow).html( '<a href="'+aData[8]+'">'+_wordwrap(aData[8],30)+'</a>' );
+                            //0 : u'fid',
+                            //1 : u'username',
+                            //2 : u'first_name',
+                            //3 : u'last_name',
+                            //4 : u'relationship',
+                            //5 : u'description',
+                            //6 : u'age',
+                            //7 : u'gender',
+                            //8 : u'location',
+                            //9 : u'company',
+                            //10 : u'last_web_access',
+                            //11 : u'subscriber_count',
+                            //12 : u'video_watch_count',
+                            //13 : u'view_count',
+                },
+                "oTableTools": {
+                  "aButtons": [ {
+                    "sExtends": "download",
+                    "sUrl": "{% url snh.views.get_yt_list 'csv' harvester_id %}",
+                  } ]
+                },
+            });
+	} );
+</script>
+{% endblock %}
+{% block submenu %}
+<table class="tableheader">
+    <tr>
+        <td {% if harvester_id == "0" %}class="submenu-selection"{% endif %}><a href="/yt/0">All users</a></td>
+        {% for h in all_harvesters %}
+        <td  {% ifequal harvester_id h.pmk_id|slugify %}class="submenu-selection"{% endifequal %}><a href="/yt/{{ h.pmk_id }}">{{ h }}</a></td>
+        {% endfor %}
+    </tr>
+</table>
+{% endblock %}
+
+{% block content %}
+<h3>List of users</h3>
+<table id="user_table" class="pretty" width="100%">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>username</th>
+        <th>first_name</th>
+        <th>last_name</th>
+        <th>relationship</th>
+        <th>description</th>
+        <th>age</th>
+        <th>gender</th>
+        <th>location</th>
+        <th>company</th>
+        <th>last web access</th>
+        <th>subscriber count</th>
+        <th>video watch count</th>
+        <th>view count</th>
+    </tr>
+    </thead>
+    <tbody>
+    </tbody>
+</table>
+{% endblock %}
