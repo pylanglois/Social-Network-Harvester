@@ -1,97 +1,53 @@
-#from ubuntu 11.10 server base installation
+#Install ubuntu 14.04 then:
 
-sudo apt-get update
-sudo apt-get dist-upgrade
-sudo apt-get install gnome-core
+sudo su
+apt-get update
+apt-get dist-upgrade
 
-sudo apt-get install resolvconf
-#add your name server manually in /etc/network/interface under the interface that will route the request...
-#see http://wiki.debian.org/NetworkConfiguration#The_resolvconf_program
+#APT installs
+#NOTE: Note the MySQL root password...
+apt-get install mysql-server apache2 libapache2-mod-wsgi python-mysqldb git python-pip
 
-sudo apt-get install mysql-server apache2 libapache2-mod-wsgi python-django python-mysqldb 
+#Python installs
+pip install django==1.3
+pip install django-grappelli==2.3.8
+pip install httplib2
+pip install fandjango==4.0.6
 
-sudo apt-get install python-qt4 libqt4-webkit
+cd /tmp/
+wget https://gdata-python-client.googlecode.com/files/gdata-2.0.18.tar.gz
+tar -xvzf gdata-2.0.18.tar.gz
+cd /tmp/gdata-2.0.18
+python setup.py install
 
-sudo apt-get install python-oauth2 python-pip
+cd /tmp/
+git clone https://github.com/bear/python-twitter.git
+cd /tmp/python-twitter
+python setup.py install
 
-sudo pip install fandjango #fandjango-4.0.3
+#The latest fandjango version is incompatible, jsonfield module is missing. Installing jsonfield uninstalls django 1.3
+#cd /tmp/
+#git clone https://github.com/jgorset/fandjango.git
+#cd /tmp/fandjango
+#python setup.py install
 
-sudo pip install python-twitter #python_twitter-0.8.2
+cd /tmp/
+git clone https://github.com/ryanmcgrath/twython.git
+cd /tmp/twython
+python setup.py install
 
-#Installation
+#MySQL config
+# CUSTOM VALUE FOR snh_schema, snh_db_user, snh_pass
+mysql -uroot -p -e "CREATE DATABASE IF NOT EXISTS snh_schema;"
+mysql -uroot -p -e "GRANT USAGE ON *.* TO snh_db_user@localhost IDENTIFIED BY 'snh_pass';"
+mysql -uroot -p -e "GRANT ALL PRIVILEGES ON snh_schema.* TO snh_db_user@localhost;"
+mysql -uroot -p -e "FLUSH PRIVILEGES;"
 
-#copy the source from github where you want.
-unzip file.zip /home/snh/prod/SocialNetworkHarvester
-cd /home/snh/prod/SocialNetworkHarvester
-sudo nano settings
-#edit your mysql access. You will need to create a schema and a user before doing this. test your access with "mysql -u yourmysqluser -p"
-#add your application_key, secret, etc....
+cd /srv
+git clone https://github.com/pylanglois/Social-Network-Harvester.git
+cd /srv/Social-Network-Harvester/SocialNetworkHarvester
+nano settings.py #Edit database settings to reflect your reality
 
-#synchroniser les BD
 ./manage.py syncdb
 
-#création des certificats
-#http://www.trustonme.net/didactels/315.html
-
-mkdir /tmp/ssl_conf
-cd /tmp/ssl_conf
-
-openssl req -config /etc/ssl/openssl.cnf -new -out trustonme.csr
-openssl rsa -in privkey.pem -out trustonme.key
-openssl x509 -in trustonme.csr -out trustonme.crt -req -signkey trustonme.key -days 3650
-openssl x509 -in trustonme.crt -out trustonme.der.crt -outform DER
-
-sudo mkdir -p /etc/apache2/ssl/key/
-sudo mkdir -p /etc/apache2/ssl/crt/
-
-sudo cp trustonme.crt /etc/apache2/ssl/crt/
-sudo cp trustonme.key /etc/apache2/ssl/key/
-
-sudo a2enmod ssl
-
-sudo nano /etc/apache2/sites-available/snh
-#add the following content and adapt to you
-<VirtualHost *:80>
-    ServerAdmin x@x.com
-    ServerName testlocal.local
-    DocumentRoot /home/snh/prod/SocialNetworkHarvester/public
-
-    # Django settings
-    WSGIScriptAlias /  /home/snh/prod/SocialNetworkHarvester/wsgi_handler.py
-    WSGIDaemonProcess testlocal.local user=yourunixuser group=yourunixgroup processes=1 threads=10
-    WSGIProcessGroup testlocal.local
-
-    # Non-Django directories
-    Alias /static  /home/snh/prod/SocialNetworkHarvester/public/static/
-    <Location "/static">
-        SetHandler None
-    </Location>
-
-</VirtualHost>
-
-<VirtualHost *:443>
-    ServerAdmin x@x.com
-    ServerName testlocal.local
-    DocumentRoot /home/snh/prod/SocialNetworkHarvester/public
-
-    # WSGI Settings
-    WSGIScriptAlias /  /home/snh/prod/SocialNetworkHarvester/wsgi_handler.py
-    WSGIProcessGroup testlocal.local
-
-    # Non-Django directories
-    Alias /static  /home/snh/prod/SocialNetworkHarvester/public/static/
-    <Location "/static">
-        SetHandler None
-    </Location>
-
-    # SSL Stuff
-    SSLEngine On
-    SSLCertificateFile /etc/apache2/ssl/crt/trustonme.crt
-    SSLCertificateKeyFile /etc/apache2/ssl/key/trustonme.key
-    <Location />
-            SSLRequireSSL On
-            SSLVerifyClient optional
-            SSLVerifyDepth 1
-            SSLOptions +StdEnvVars +StrictRequire
-    </Location>
-</VirtualHost>
+#TODO apache config...
