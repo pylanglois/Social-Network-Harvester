@@ -50,4 +50,24 @@ nano settings.py #Edit database settings to reflect your reality
 
 ./manage.py syncdb
 
-#TODO apache config...
+#Create a user that will run the snh
+useradd -r -s /bin/false snh_www
+chown snh_www:snh_www -R /srv/Social-Network-Harvester
+
+#optional. install acls to allow a devuser to modify the code. change "devuser" for your own bash username
+apt-get install acl
+setfacl -R -d -m g:devuser:rwX /srv/Social-Network-Harvester
+setfacl -R -m    g:devuser:rwX /srv/Social-Network-Harvester
+
+#Apache config, SSL, etc..
+#Create a SSL certificate for facebook oauth
+#https://www.digitalocean.com/community/tutorials/how-to-create-a-ssl-certificate-on-apache-for-ubuntu-14-04
+
+a2enmod ssl
+service apache2 restart
+mkdir /etc/apache2/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/snh_instance1.key -out /etc/apache2/ssl/snh_instance1.crt
+#When ask for Common Name (FQDN...) enter the url of your site... ex: snh.example.com
+
+#Create your virtualhost
+cd /etc
