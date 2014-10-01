@@ -3,6 +3,10 @@
     ServerName snh.example.com
     DocumentRoot /srv/Social-Network-Harvester/SocialNetworkHarvester/public
 
+    <Directory /srv/Social-Network-Harvester/SocialNetworkHarvester/>
+        Require all granted
+    </Directory>
+
     # Django settings
     WSGIScriptAlias /  /srv/Social-Network-Harvester/SocialNetworkHarvester/wsgi_handler.py
     WSGIDaemonProcess snh.example.com user=snh_www group=snh_www processes=1 threads=10

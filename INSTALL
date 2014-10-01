@@ -36,6 +36,12 @@ git clone https://github.com/ryanmcgrath/twython.git
 cd /tmp/twython
 python setup.py install
 
+cd /tmp
+wget https://google-visualization-python.googlecode.com/files/gviz_api_py-1.8.2.tar.gz
+tar -xvzf gviz_api_py-1.8.2.tar.gz
+cd gviz_api_py-1.8.2/
+python setup.py install
+
 #MySQL config
 # CUSTOM VALUE FOR snh_schema, snh_db_user, snh_pass
 mysql -uroot -p -e "CREATE DATABASE IF NOT EXISTS snh_schema;"
@@ -45,13 +51,24 @@ mysql -uroot -p -e "FLUSH PRIVILEGES;"
 
 cd /srv
 git clone https://github.com/pylanglois/Social-Network-Harvester.git
+
+#fix symlink issues
+cd /srv/Social-Network-Harvester/SocialNetworkHarvester/static
+rm admin
+ln -s /usr/local/lib/python2.7/dist-packages/django/contrib/admin/media admin
+rm jquery.js
+ln -s /usr/local/lib/python2.7/dist-packages/grappelli/static/grappelli/js/jquery.js jquery.js
+
+#Edit database settings to reflect your reality
 cd /srv/Social-Network-Harvester/SocialNetworkHarvester
-nano settings.py #Edit database settings to reflect your reality
+nano settings.py
 
 ./manage.py syncdb
+./manage.py collectstatic
 
 #Create a user that will run the snh
-useradd -r -s /bin/false snh_www
+useradd -r -s /bin/false --home /home/snh_www snh_www
+mkdir /home/snh_www
 chown snh_www:snh_www -R /srv/Social-Network-Harvester
 
 #optional. install acls to allow a devuser to modify the code. change "devuser" for your own bash username
@@ -70,4 +87,16 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/snh
 #When ask for Common Name (FQDN...) enter the url of your site... ex: snh.example.com
 
 #Create your virtualhost
-cd /etc
+cd /etc/apache2/sites-available/
+cp /srv/Social-Network-Harvester/shn_vhost_sample ./snh_instance1.conf
+#Edit snh_instance1 to fit your reality. change the value of: yourmail@example.com, snh.example.com, snh_www
+nano snh_instance1.conf
+
+#Enable your site
+a2ensite snh_instance1
+service apache2 reload
+
+#optionnal. If the your site (snh.example.com) is not registered to a DNS, you can modify your hosts file to access your site see:
+#http://www.howtogeek.com/howto/27350/beginner-geek-how-to-edit-your-hosts-file/
+#add a new line like: 1.2.3.4 snh.example.com
+
