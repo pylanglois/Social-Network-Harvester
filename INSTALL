@@ -88,7 +88,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/snh
 
 #Create your virtualhost
 cd /etc/apache2/sites-available/
-cp /srv/Social-Network-Harvester/shn_vhost_sample ./snh_instance1.conf
+cp /srv/Social-Network-Harvester/snh_vhost_sample ./snh_instance1.conf
 #Edit snh_instance1 to fit your reality. change the value of: yourmail@example.com, snh.example.com, snh_www
 nano snh_instance1.conf
 

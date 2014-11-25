@@ -1,5 +1,10 @@
 #Upgrade to new facebook api..
 #https://developers.facebook.com/docs/apps/upgrading
-
-
 #https://datatables.net/
+
+Pour créer un nouveau TwitterHarvester:
+- Créer un nouveau modele (ex: snh/models/TwitterModel2.py)
+- Importer votre nouveau model dans snh/__init__.py
+- Créer un nouveau harvester (ex: snh/management/commands/cronharvester/twitterch2.py)
+- Créer une nouvelle commande à la crontw pour lancer la récolte (snh/management/commands/crontw2.py)
+
