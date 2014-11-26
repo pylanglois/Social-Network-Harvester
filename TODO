@@ -4,7 +4,17 @@
 
 Pour créer un nouveau TwitterHarvester:
 - Créer un nouveau modele (ex: snh/models/TwitterModel2.py)
-- Importer votre nouveau model dans snh/__init__.py
-- Créer un nouveau harvester (ex: snh/management/commands/cronharvester/twitterch2.py)
-- Créer une nouvelle commande à la crontw pour lancer la récolte (snh/management/commands/crontw2.py)
+-- Choisir ou non de conserver l'abstraction du harvester...
+-- Valider les anciennes contraintes:
+--- max hit per hour (besoin de compter pour ne pas faire bannir la clé)
+--- Reprendre la récolte là où elle s'était arrêtée lorsque max hit est atteint avant la fin de la récolte
+--- La recherche utilise des règles différentes. Est-ce encore la cas? Nouvel API?
+--- Gestion des erreurs (est-ce mieux qu'avant? Gérer le période ou l'API ne répond plus en raison du volume)
 
+- Importer votre nouveau model dans snh/__init__.py
+
+- Créer un nouveau "cron harvester" (ex: snh/management/commands/cronharvester/twitterch2.py)
+-- Utiliser directement le third party ou faire une abstraction? Là est la question!
+
+- Créer une nouvelle commande à la crontw pour lancer la récolte (snh/management/commands/crontw2.py)
+-- Utiliser avec singleton... (tendo ou autre) pour éviter que 2 récoltes soit lancées par le cron...
